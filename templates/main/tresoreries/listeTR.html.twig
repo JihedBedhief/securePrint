@@ -1,0 +1,123 @@
+{% extends "baseAdmin.html.twig" %}
+{% block body %}
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="card ml-2 mb-3">
+                <div class="card-body col-lg-10">
+                    <form action="{{ path('app_liste_tr') }}" method="get" class="form-inline">
+                        <div class="form-group col-lg-2">
+                            <h5 class="mt-2">
+                                <strong>
+                                    Filtrer par :
+                                </strong>
+                            </h5>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <select name="pays" class="form-control col-lg-12">
+                                <option value="">
+                                    Tous les Pays
+                                </option>
+                                {% for pays in allCountries %}
+                                    <option value="{{ pays.id }}" {% if selectedPaysId == pays.id %} selected {% endif %}>
+                                        {{ pays.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Filtrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Search Bar -->
+            <input type="text" id="searchInput" class="form-control mb-3" placeholder="Rechercher une banque ou un compte..." onkeyup="searchTable()">
+                <div class="">
+                    <div class="col-lg-12 grid-margin stretch-card">
+                        <div class="card">
+                            {% for message in app.flashes('success') %}
+                                <div class="alert alert-success">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <div class="card-body">
+                                <div class="card-title text-center text-primary font-italic">
+                                    <span style="font-size:23px;">
+                                        Liste des trésoreries
+                                    </span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="banqueTable">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Pays
+                                                </th>
+                                                <th>
+                                                    Nom Banque
+                                                </th>
+                                                <th>
+                                                    Comptes
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for paysWithBanque in paysWithBanques %}
+                                                {% for banque in paysWithBanque.banques %}
+                                                    <tr class="banque-row">
+                                                        {% if loop.first %}
+                                                            <td rowspan="{{ paysWithBanque.banques|length }}" class="bank-country">
+                                                                {{ paysWithBanque.nom }}
+                                                            </td>
+                                                        {% endif %}
+                                                        <td class="bank-name">
+                                                            {{ banque.nom }}
+                                                        </td>
+                                                        <td>
+                                                            <ul>
+                                                                {% for compte in banque.compte %}
+                                                                    <li class="bank-account">
+                                                                        <a href="{{ path('app_operations_by_comptes', {'id': compte.id}) }}">
+                                                                            {{ compte.num }}
+                                                                            (Solde:
+                                                                            {{ compte.solde }}
+                                                                            )
+                                                                        </a>
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                <tr style="border-bottom: 2px solid black;"></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- JavaScript for Search -->
+        <script>
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll(".banque-row");
+
+        rows.forEach(row => {
+            let bankName = row.querySelector(".bank-name").textContent.toLowerCase();
+            let countryName = row.querySelector(".bank-country") ? row.querySelector(".bank-country").textContent.toLowerCase() : "";
+            let accountNumbers = [...row.querySelectorAll(".bank-account")].map(acc => acc.textContent.toLowerCase());
+
+            if (bankName.includes(input) || countryName.includes(input) || accountNumbers.some(acc => acc.includes(input))) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
+    {% endblock %}
+    

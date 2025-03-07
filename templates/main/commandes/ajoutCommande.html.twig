@@ -1,0 +1,363 @@
+{% extends "baseAdmin.html.twig" %}
+
+
+{% block body %}
+
+
+<style>
+  /* Add inline-block display for the inputs and button inside "horizontal-container" */
+  .horizontal-container input {
+    display: inline-block;
+    
+    /* Optional: Adjust other styles for spacing and alignment */
+    /* For example: */
+     margin-top: 16px;
+     margin-right: 16px;
+    /* vertical-align: middle; // Align elements vertically */
+  }
+  .horizontal-container button {
+
+    display: inline-block;
+    
+
+
+  }
+  /* Make sure to hide the contents of the div when it's set to display: none */
+  .horizontal-container[style*="display: none"] {
+    display: none;
+  }
+</style>
+
+
+
+<div class="container mt-5">
+
+
+	<div class="tab-content">
+
+
+		<div class="tab-pane active">
+
+
+    {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                  {{ message }}
+                </div>
+             {% endfor %}
+
+            <div class="row m-2 mb-3 justify-content-between">
+              <div>
+                <h3>Ajouter bon de commande :</h3>
+              </div>
+              <div>
+                <a href="{{path('add_material_route')}}" class="btn btn-success">
+                  Ajouter materiel +
+                </a>
+                <a href="{{path('add_banque_route')}}" class="btn btn-danger">
+                  Ajouter Banque +
+                </a>
+                <a href="{{path('app_add_devise')}}" class="btn btn-warning">
+                  Ajouter Devise +
+                </a>
+              </div>
+            </div>
+			
+				<hr>
+        
+
+				<form method="POST" id="commandForm">
+					<div class="row">
+						<div class="col-md-4">
+              <div class="form-group">
+                  <label for="ref">N° de commande</label>
+                  <input type="text" class="form-control" id="ref" name="ref" required autocomplete="off">
+                  {% if validationErrors is defined and validationErrors['ref'] is defined %}
+                      <div class="error-message">
+                          {% for error in validationErrors['ref'] %}
+                              {{ error.message }}
+                          {% endfor %}
+                      </div>
+                  {% endif %}
+              </div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="description">Description</label>
+								<input type="text" class="form-control" id="description" name="description" required>
+							</div>
+						</div>
+            <div class="col-md-4">
+							<div class="form-group">
+								<label for="date">Date</label>
+								<input type="date" class="form-control" id="date" name="date" required>
+							</div>
+						</div>
+						
+
+					</div>
+
+					<div class="row">
+            <div class="col-md-3">
+							<div class="form-group">
+								<label for="banque">Banque</label>
+								<select class="form-control" name="banque" required>
+									<option value="">Choisir une banque</option>
+									{% for banque in banques %}
+										<option value="{{ banque.id }}">{{ banque.nom }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="tauxtva">Taux TVA ( 10 = 10% )</label>
+								<input type="text" class="form-control" id="tauxtva" name="tauxtva" pattern="\d+(\.\d+)?" title="Veuillez saisir un numéro valide" required>
+							</div>
+						</div>
+            <div class="col-md-3">
+                <div class="form-group">
+                  <label for="devise">Devise</label>
+                  <select class="form-control" name="devise" required>
+                    <option value="">Choisir une devise</option>
+                    {% for devise in devises %}
+                      <option value="{{ devise.id }}">{{ devise.nom }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+            </div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="avance">Avance</label>
+								<input type="text" class="form-control" id="avance" name="avance" pattern="[0-9]+" title="Veuillez saisir un numéro valide" required>
+							</div>
+						</div>
+
+            <div class="col-md-3">
+							<div class="form-group">
+								<label for="remise">Remise (%)</label>
+								<input type="text" class="form-control" id="remise" name="remise" pattern="[0-9]+" title="Veuillez saisir un numéro valide" required>
+							</div>
+						</div>
+					</div>
+
+          <div class="row">
+            <div id="materialContainers" class="col-md-12">
+              <div class="row material-container">
+                <div class="col-md-4">
+                  <select class="form-control materialSelect mt-3" onchange="showSelectedMaterial()" name="materialSelect[]" required>
+                    <option value="">Choisir matériel</option>
+                    {% for materiel in materiels %}
+                      <option value="{{ materiel.id }}" data-price="{{ materiel.pu }}">{{ materiel.nom }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="horizontal-container" style="display: none;">
+                  <input type="number" class=" col-md-4 form-control quantity" name="quantite[]" placeholder="Quantité" pattern="[0-9]+" title="Veuillez saisir un numéro valide" required/>
+                  <label for="price"><span style="margin-left:-10px;" class="font-italic">Prix</span></label>
+                  <input class=" col-md-4 form-control price" type="text" name="price[]" value=""  pattern="\d+(\.\d+)?" title="Veuillez saisir un numéro valide"/>
+                  <button class=" addMaterial btn btn-info" type="button"><span style="font-size:16px;">+</span></button>
+                  <button class="removeMaterial btn btn-danger" type="button"><span style="font-size:16px;">−</span></button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary font-italic">Enregistrer</button>
+          </div>
+
+			  </form>
+
+
+		</div>
+	</div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- Include jQuery library if not already included -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Function to add a new material row
+      function addNewMaterialRow() 
+      {
+        let materialContainer = document.createElement('div');
+        materialContainer.className = 'row material-container';
+
+        let selectDropdown = document.createElement('select');
+        selectDropdown.className = 'form-control col-6 materialSelect';
+        selectDropdown.onchange = showSelectedMaterial;
+        
+        let defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.text = 'Choisir matériel';
+        selectDropdown.appendChild(defaultOption);
+        
+
+        // Add options from the 'materiels' variable here
+        {% for materiel in materiels %}
+            let option = document.createElement('option');
+            option.value = "{{ materiel.id }}";
+            option.text = "{{ materiel.nom }}";
+            selectDropdown.appendChild(option);
+        {% endfor %}
+
+        let quantityPriceDiv = document.createElement('div');
+        quantityPriceDiv.style.display = 'none';
+        let quantityLabel = document.createElement('label');
+        quantityLabel.textContent = 'Quantité';
+        let quantityInput = document.createElement('input');
+        quantityInput.className = 'form-control col-lg-4 quantity';
+        quantityInput.name = 'quantite[]';
+        quantityPriceDiv.appendChild(quantityLabel);
+        quantityPriceDiv.appendChild(quantityInput);
+
+        let priceLabel = document.createElement('label');
+        priceLabel.textContent = 'Prix de vente';
+        let priceInput = document.createElement('input');
+        priceInput.className = 'form-control col-lg-4 price';
+        priceInput.type = 'text';
+        priceInput.name = 'price[]';
+        quantityPriceDiv.appendChild(priceLabel);
+        quantityPriceDiv.appendChild(priceInput);
+
+        let addButton = document.createElement('button');
+        addButton.className = 'ml-4 addMaterial';
+        addButton.type = 'button';
+        addButton.textContent = '+';
+        addButton.onclick = addNewMaterialRow;
+
+        let removeButton = document.createElement('button');
+        removeButton.className = 'ml-2 removeMaterial';
+        removeButton.type = 'button';
+        removeButton.textContent = '−';
+        removeButton.onclick = removeMaterialRow; 
+
+        materialContainer.appendChild(selectDropdown);
+        materialContainer.appendChild(quantityPriceDiv);
+        materialContainer.appendChild(addButton);
+        materialContainer.appendChild(removeButton);
+
+        const originalQuantity = quantityInput.value;
+        const originalPrice = priceInput.value;
+
+        
+
+        const clonedQuantityInput = materialContainer.querySelector('.quantity');
+        const clonedPriceInput = materialContainer.querySelector('.price');
+        clonedQuantityInput.value = originalQuantity;
+        clonedPriceInput.value = originalPrice;
+        
+        // Hide the quantity and price div in the cloned container
+        const clonedDivToShowHide = materialContainer.querySelector('.quantity').parentElement;
+        clonedDivToShowHide.style.display = 'none';
+
+        document.getElementById('materialContainers').appendChild(materialContainer);
+      }
+
+      // Event listener for the existing "+" and "-" buttons
+      let materialContainers = document.getElementById('materialContainers');
+      materialContainers.addEventListener('click', function (event) {
+          const clickedButton = event.target;
+          
+          if (clickedButton.classList.contains('addMaterial')) {
+              addNewMaterialRow();
+          } else if (clickedButton.classList.contains('removeMaterial')) {
+              const materialContainer = clickedButton.closest('.material-container');
+              materialContainer.remove();
+          }
+      });
+
+      
+
+</script>
+
+
+<script>
+  // Function to show/hide the quantity and price div based on material selection
+  // Inside the function showSelectedMaterial()
+  function showSelectedMaterial() {
+      const materialContainers = document.querySelectorAll('.material-container');
+      materialContainers.forEach((container) => {
+          const select = container.querySelector('.materialSelect');
+          const priceInput = container.querySelector('.price');
+          const quantityInput = container.querySelector('.quantity');
+          const selectedOption = select.options[select.selectedIndex]; // Corrected variable name here
+          const price = selectedOption.getAttribute('data-price');
+          const quantity = selectedOption.getAttribute('data-quantity');
+
+          priceInput.value = price;
+          quantityInput.value = quantity; // Set the quantity value
+
+          const divToShowHide = container.querySelector('.quantity').parentElement;
+
+          if (select.value !== '') {
+              divToShowHide.style.display = 'inline-block';
+          } else {
+              divToShowHide.style.display = 'none';
+          }
+      });
+  }
+
+
+
+    const materialContainers = document.getElementById('materialContainers');
+
+      materialContainers.addEventListener('click', function (event) {
+      const clickedElement = event.target;
+
+      // Check if the clicked element is a button with the class "addMaterial"
+      if (clickedElement.classList.contains('addMaterial')) {
+          // Clone the material container (including select dropdown and buttons)
+          const clonedMaterialContainer = clickedElement.closest('.material-container').cloneNode(true);
+
+          // Get the select dropdown from the cloned container
+          const clonedSelect = clonedMaterialContainer.querySelector('.materialSelect');
+
+          // Hide the quantity and price div in the cloned container
+          const clonedDivToShowHide = clonedMaterialContainer.querySelector('.quantity').parentElement;
+          clonedDivToShowHide.style.display = 'none';
+
+          // Append the cloned material container to the "materialContainers" div
+          materialContainers.appendChild(clonedMaterialContainer);
+
+          // Disable the "+" button in the current container
+          clickedElement.style.display = 'none';
+      } else if (clickedElement.classList.contains('removeMaterial')) {
+          // Find the parent material container and remove it
+          const containerToRemove = clickedElement.closest('.material-container');
+          containerToRemove.remove();
+          // Disable the "-" button in the current container
+          clickedElement.style.display = 'none';
+          
+      }
+  });
+
+</script>
+
+
+<script>
+  // When the page is ready, hide the #materialSelect and show the #materialDropdown
+  $(document).ready(function() {
+    //$("#materialSelect").hide();
+    $("#materialDropdown").show();
+  });
+</script>
+
+
+
+
+
+
+{% endblock %}

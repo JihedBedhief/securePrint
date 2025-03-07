@@ -1,0 +1,183 @@
+{% extends "baseAdmin.html.twig" %}
+
+
+
+{% block body %}
+
+<div class="main-panel">
+	<div class="content-wrapper">
+		<div>
+			<div class="row ml-3 mb-2">
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+					Ajouter admin +
+				</button>
+			</div>
+			<div class="col-lg-12 grid-margin stretch-card">
+				<div class="card">
+					{% for message in app.flashes('success') %}
+						<div class="alert alert-success">
+							{{ message }}
+						</div>
+					{% endfor %}
+					<div class="card-body">
+						<h4 class="card-title">liste des utilisateurs</h4>
+						<div class="table-responsive">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>
+											User photo
+										</th>
+										<th>
+											User email
+										</th>
+										<th>
+											User role
+										</th>
+										<th>
+											Etat
+										</th>
+										{% if app.user.getRoles()=='ROLE_ADMIN' %}
+											<th>
+												Actions
+											</th>
+										{% endif %}
+									</tr>
+								</thead>
+								<tbody>
+									{% for item in allUsers %}
+										<tr>
+											<td class="py-1">
+												<img src="{{ asset(vich_uploader_asset(item, 'imageFile')) }}" alt="photo">
+											</td>
+											<td>
+												{{item.email}}
+											</td>
+											<td>
+												{{item.roles}}
+											</td>
+											<td>
+												{{item.etat}}
+											</td>
+											{% if app.user.getRoles()=='ROLE_ADMIN' %}
+												<td>
+													<a href="{{path('app_edit_user', {'id': item.id})}}" class="btn btn-success btn-sm">Modifier</a>
+													{% if item.etat == 'approved' or item.etat == 'debloqué'  %}
+														<a href="{{ path('app_block_user', {'id': item.id}) }}" class="btn btn-dark btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir bloquer cet utilisateur ?')">Bloquer</a>
+													{% elseif item.etat == 'blocked' %}
+														<a href="{{ path('app_deBlock_user', {'id': item.id}) }}" class="btn btn-info btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir débloquer cet utilisateur ?')">Débloquer</a>
+													
+													{% endif %}
+													
+													
+												</td>
+											{% endif %}
+
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+            <div class="col-lg-12 grid-margin stretch-card">
+				<div class="card">
+					{% for message in app.flashes('success') %}
+						<div class="alert alert-success">
+							{{ message }}
+						</div>
+					{% endfor %}
+					<div class="card-body">
+						<h4 class="card-title">Liste Des Supers Utilisateurs</h4>
+						{# <p class="card-description">
+						                    Add class <code>.table-striped</code>
+						                  </p> #}
+						<div class="table-responsive">
+							  <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    User photo
+                                </th>
+								<th>
+                                    User name
+                                </th>
+                                <th>
+                                    User email
+                                </th>
+                                <th>
+                                    User role
+                                </th>
+                                {% if app.user.getRoles()=='ROLE_ADMIN' %}
+                                    <th>
+                                        Actions
+                                    </th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in users %}
+                                <tr>
+                                    <td class="py-1">
+                                        <img src="{{ asset(vich_uploader_asset(item, 'imageFile')) }}" alt="photo">
+									</td>
+									<td>
+                                        {{item.fullname}}
+                                    </td>
+                                    <td>
+                                        {{item.email}}
+                                    </td>
+                                    <td>
+                                        {{item.roles}}
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_commandes_by_user', {'id': item.id}) }}" class="btn btn-primary btn-sm"><span class=" text-uppercase">Consulter Commandes</span></a>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Ajouter nouveau admin</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {{form(addUser)}}
+      </div>
+      {# <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div> #}
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}

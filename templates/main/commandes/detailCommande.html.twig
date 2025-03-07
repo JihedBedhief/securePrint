@@ -1,0 +1,243 @@
+{% extends "baseAdmin.html.twig" %}
+
+
+
+
+{% block body %}
+
+
+<style>
+
+.facture-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.facture-table th, .facture-table td {
+    border: 1px solid black;
+    padding: 8px;
+}
+
+.facture-heading {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+
+
+
+
+
+</style>
+
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="card mb-3">
+                {# <div class="card-body col-lg-12"></div> #}
+            </div>
+
+
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        <div class="card-body">
+                            <div class="row ml-2 mr-2 mb-3 justify-content-between">
+                                
+                                <div>
+                                    <strong>Utilisateur :</strong>
+                                    {{commande.user.fullname}}
+                                </div>
+                                <div>
+                                    <span class="text-primary"><strong>Commande N°</strong></span>
+                                    
+                                    {{commande.ref}}
+
+                                </div>
+                                <div>
+                                    <strong>TVA :</strong>
+                                    {{commande.tauxtva}} %
+                                </div>
+                            </div>
+
+                            
+                            
+                            <div class="table-responsive">
+
+
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class=" bg-dark text-white">
+                                        <th>Command Description</th>
+                                        <th>Banque</th>
+                                        <th>Materiel</th>
+                                        <th>Quantity</th>
+                                        {# <th>Avance</th> #}
+                                        {# <th>Taux TVA</th> #}
+                                        <th>PRIX UNIT. HT</th>
+                                        <th>MONTANT HT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set totalHT = 0 %}
+                                    {% set totalTTC = 0 %}
+                                    {% set tva = 0 %}
+                                    {% set remise = 0 %}
+                                    {% set devise = '' %}
+                                    
+                                        {% for commandeMateriel in commande.commandeMateriels %}
+                                        {% set devise = commande.devise.nom %}
+                                            <tr>
+                                                {% if loop.first %}
+                                                    <td rowspan="{{ commande.commandeMateriels|length }}">{{ commande.description }}</td>
+                                                    <td rowspan="{{ commande.commandeMateriels|length }}">
+                                                        <a href="#" data-toggle="modal" data-target="#banquePopup">{{ commande.banque.nom }}</a>
+                                                    </td>
+                                                {% endif %}
+                                                <td>{{ commandeMateriel.materiel.nom }}</td>
+                                                <td>{{ commandeMateriel.quantite }}</td>
+                                                {# <td>{{ commandeMateriel.commande.avance }}</td> #}
+                                                {# <td rowspan="{{ commande.commandeMateriels|length }}">{{ commandeMateriel.commande.tauxtva}}%</td> #}
+                                                <td>{{ commandeMateriel.prixV }} {{devise}}</td>
+                                                <td>{{ commandeMateriel.quantite * commandeMateriel.prixV }}  {{devise}}</td>
+                                            </tr>
+                                            {% set totalHT = totalHT + (commandeMateriel.quantite * commandeMateriel.prixV) %}
+                                            {% set tva = totalHT * ( commande.tauxtva / 100 ) %}
+                                            {% set totalTTC = totalHT + tva %}
+                                            {% set remise = totalTTC * ( commande.remise / 100 ) %}
+                                        {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <div style="margin-left:75%;" class="mt-2 mb-2">
+                                <table class="table table-borderless col-md-16 w-150">
+                                    <tr>
+                                        <th>
+                                            <span class="text-primary">Total HT</span>
+                                            <span class=" float-right">{{ totalHT|number_format(0, '.', ' ') }} {{devise}}
+                                            
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <span class="text-primary">TVA</span>
+                                            <span class=" float-right">{{ tva|number_format(0, '.', ' ') }} {{devise}}
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <table class="table table-bordered col-xl-12">
+                            {# {% for commandeMateriel in commande.commandeMateriels %} #}
+                                <tr class=" bg-gradient-primary">
+                                    <th>
+                                        <span class="">TOTAL TTC</span>
+                                        <span class=" float-right">{{ totalTTC|number_format(0, '.', ' ') }} {{devise}}</span>
+                                    </th>
+                                    
+                                </tr>
+
+                                {% if commande.remise > 0 %}
+                                
+                                    <tr>
+                                        <th>Remise
+                                            <span class=" float-right">{{ commande.remise }}%</span>
+                                        </th>
+                                        
+                                    </tr>
+                                    <tr>
+                                        <th>Montant après réduction
+                                            <span class=" float-right"> {{ (totalTTC - remise)|number_format(0, '.', ' ') }} {{devise}}</span>
+                                        </th>
+                                        
+                                    </tr>
+                                {% endif %}
+                                {% if commande.avance > 0 %}
+                                
+                                    <tr>
+                                        <th>Avance
+                                            <span class=" float-right">{{ (commande.avance)|number_format(0, '.', ' ') }} {{devise}}</span>
+                                        </th>
+                                        
+                                    </tr>
+                                    <tr class=" bg-gradient-danger">
+                                        <th>Reste
+                                        {% if commande.remise > 0 %}
+                                            <span class=" float-right">{{  (( totalTTC - remise ) - commande.avance)|number_format(0, '.', ' ')  }} {{devise}}</span>
+                                        {% else %}
+                                            <span class=" float-right">{{ (totalTTC - commande.avance)|number_format(0, '.', ' ') }} {{devise}}</span>
+                                        {% endif %}
+                                        
+                                            
+                                        </th>
+                                        
+                                    </tr>
+                                {% endif %}
+
+                               
+                            {# {% endfor %} #}
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="banquePopup" tabindex="-1" role="dialog" aria-labelledby="banquePopupLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="banquePopupLabel">Informations sur le banque</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-light">
+                    <tr>
+                        <th>Nom du banque</th>
+                        <td>{{ commande.banque.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Pays</th>
+                        <td>{{ commande.banque.pays.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adresse</th>
+                        <td>{{ commande.banque.address }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ commande.banque.mail }}</td>
+                    </tr>
+                    <tr>
+                        <th>Numéro de tel</th>
+                        <td>{{ commande.banque.tel }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ commande.banque.descr }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

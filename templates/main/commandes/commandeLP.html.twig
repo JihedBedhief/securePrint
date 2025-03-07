@@ -1,0 +1,108 @@
+{% extends "baseAdmin.html.twig" %}
+
+{% block body %}
+
+<div class="main-panel">
+	<div class="content-wrapper">
+		<div class="col-12 col-xl-12">
+		</div>
+
+		<div class="row">
+			<div class="col-lg-12 grid-margin stretch-card">
+				<div class="card">
+					{% for message in app.flashes('success') %}
+						<div class="alert alert-success">
+							{{ message }}
+						</div>
+					{% endfor %}
+					<div class="card-body">
+						<h4 class="card-title">liste des commandes livré et Payé</h4>
+						<br><br>
+
+                        <!-- Search bar -->
+                        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Rechercher une commande..." onkeyup="filterCommandes()">
+
+						<div class="table-responsive">
+						
+							{% if commandeslp|length > 0 %}
+							<table class="table table-condensed table-bordered" id="commandesTable">
+								<thead>
+									<tr>
+										<th>N° de commande</th>
+										<th>Description</th>
+										<th>Materiel</th>
+										<th>Quantity</th>
+										<th>Prix d'achat</th>
+										<th>Prix de vente</th>
+										<th>Nom du banque</th>
+										<th>Taux tva</th>
+										<th>Date</th>
+										<th>User name</th>
+										<th>Etat</th>
+										<th>Actions</th>
+
+									</tr>
+								</thead>
+								<tbody>
+									{% for item in commandeslp %}
+									{% set numRows = item.commandemateriels|length %}
+									{% for commande_materiel in item.commandemateriels %}
+									<tr class="commande-row {% if item.etat == 'nonlivre' %}table-danger{% elseif item.etat == 'livrepaye' %}table-primary{% elseif item.etat == 'livrenonpaye' %}table-info{% endif %}">
+										{% if loop.first %}
+										<td rowspan="{{ numRows }}">{{ item.ref }}</td>
+										<td rowspan="{{ numRows }}">{{ item.description }}</td>
+										{% endif %}
+										<td>{{ commande_materiel.materiel.nom }}</td>
+										<td>{{ commande_materiel.quantite }}</td>
+										<td>{{ commande_materiel.materiel.pu }}</td>
+										<td>{{ commande_materiel.prixV }}</td>
+										{% if loop.first %}
+										<td rowspan="{{ numRows }}">{{ item.banque.nom }}</td>
+										<td rowspan="{{ numRows }}">{{ item.tauxtva * 100 }}%</td>
+										<td rowspan="{{ numRows }}">{{ item.date | date('d-m-Y') }}</td>
+										<td rowspan="{{ numRows }}">{{ item.user.fullname }}</td>
+										<td rowspan="{{ numRows }}">
+											{% if item.etat == 'pending' %}
+											<span class="text-info font-italic font-weight-500 font-weight-bold">En cours...</span>
+											{% elseif item.etat == 'nonlivre' %}
+												<span class="text-danger font-italic font-weight-500 font-weight-bold">Non livré</span>
+											{% elseif item.etat == 'livrepaye' %}
+												<span class="text-success font-italic font-weight-500 font-weight-bold">Livré et payé</span>
+											{% elseif item.etat == 'livrenonpaye' %}
+												<span class="text-primary font-italic font-weight-500 font-weight-bold">Livré non payé</span>
+											{% endif %}
+										</td>
+										<td rowspan="{{ numRows }}">
+											<a href="{{ path('app_show_commande', {'id': item.id}) }}" class="btn btn-info btn-sm">Afficher</a>
+										</td>
+										{% endif %}
+									</tr>
+									{% endfor %}
+									<tr style="border-bottom: 2px solid black;"></tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+								<p class=" text-danger font-italic">No records for the moment</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function filterCommandes() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let rows = document.querySelectorAll(".commande-row");
+    
+    rows.forEach(row => {
+        let text = row.textContent.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
+
+{% endblock %}

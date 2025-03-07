@@ -1,0 +1,92 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block body %}
+
+    <style>
+      .block {
+        flex: 0 0 33%;
+        text-align: center;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 1px; /* Add margin space */
+      }
+
+      .block img {
+        max-width: 50%;
+        height: auto;
+      }
+
+      .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+      }
+    </style>
+
+
+
+    <div class="main-panel">
+
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        <button type="button" class="btn btn-success mb-5" data-toggle="modal" data-target="#exampleModal">
+                            Créer un compte +
+                        </button>
+
+                        <div class="card-body">
+                            <h4 class=" text-center">Les comptes du banque <span class="text-primary">{{banque.nom}}</span> en <span class="text-info">{{banque.pays.nom}}</span> </h4>
+
+                            <div class="flex-container">
+                                {% for item in comptes %}
+                                    <div class="block">
+                                        <a href="{{ path('app_operations_by_comptes', {'id': item.id}) }}" class="d-block">
+                                            <span class="d-block"> N° du compte : {{ item.num }}</span>
+                                            <span class="d-block"> Devise : {{ item.devise.nom }}</span>
+                                            <span class="d-block"> Solde : {{ item.solde }}</span>
+                                            <span class="d-block"> Banque : {{ item.banques.nom }}</span>
+                                        </a>
+
+                                    </div>
+                                    {% if loop.index is divisible by(3) %}
+                                    <div style="clear:both;"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" >
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Ouvrir un nouveau compte en <span class=" text-primary">({{banque.nom}})</span>  </h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+        {{form(form)}} 
+        </div>
+        </div>
+    </div>
+    </div>  
+
+{% endblock %}

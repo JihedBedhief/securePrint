@@ -1,0 +1,70 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block body %}
+<div class="main-panel">
+    <div class="content-wrapper">
+        <button type="button" class="btn btn-success mb-5" data-toggle="modal" data-target="#exampleModal">
+            AJOUTER BANQUE +
+        </button>
+
+        <!-- Search Bar -->
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Rechercher une banque..." onkeyup="searchBanks()">
+
+        <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    <div class="card-body">
+                        <h4 class="card-title">Listes des banques</h4>
+                        <div class="table-responsive">
+                            <div class="flex-container" id="banksContainer">
+                                {% for item in banks %}
+                                    <div class="block bank-item">
+                                        <img src="{{ asset(vich_uploader_asset(item, 'imageFile')) }}" width="60px" alt="photo">
+                                        <div class="bank-name">{{ item.nom }}</div>
+                                        <div class="mt-3">Pays : <span class="bank-country">{{ item.pays.nom }}</span></div>
+                                        {% if app.user.getRoles()=='ROLE_ADMIN' or app.user.getRoles() == 'ROLE_SUPER_USER' %}
+                                            <div class="mt-2">
+                                                <a href="{{path('app_edit_banque', {'id': item.id})}}" class="btn btn-success btn-sm">Modifier</a>
+                                                <a href="{{path('app_delete_banque', {'id': item.id})}}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce matériel ?')">Supprimer</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% if loop.index is divisible by(3) %}
+                                        <div style="clear:both;"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- JavaScript for Search -->
+<script>
+    function searchBanks() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let banks = document.querySelectorAll(".bank-item");
+
+        banks.forEach(bank => {
+            let name = bank.querySelector(".bank-name").textContent.toLowerCase();
+            let country = bank.querySelector(".bank-country").textContent.toLowerCase();
+
+            if (name.includes(input) || country.includes(input)) {
+                bank.style.display = "";
+            } else {
+                bank.style.display = "none";
+            }
+        });
+    }
+</script>
+
+{% endblock %}
